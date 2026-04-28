@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Insights Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <h1>Stock Insights Pro</h1>
+    <p class="subtitle">Real-time data · Technical analysis · Trading signals</p>
+    <div class="stock-entry">
+      <input type="text" id="global-stock-input" class="input-symbol global-input" placeholder="Enter ticker or company name (e.g. AAPL or Apple)" value="" autocomplete="off">
+      <button type="button" id="btn-go" class="btn btn-primary">Go</button>
+      <span id="global-stock-label" class="stock-label hidden"></span>
+      <span id="global-stock-error" class="message error inline hidden"></span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button type="button" class="tab active" data-tab="market">Market Data</button>
+    <button type="button" class="tab" data-tab="analysis">Analysis</button>
+    <button type="button" class="tab" data-tab="quant">Quant & Advice</button>
+  </nav>
+
+  <main class="content">
+    <section id="panel-market" class="panel active">
+      <div class="panel-inner">
+        <p id="market-prompt" class="panel-prompt">Enter a ticker or company name above and click Go to load data.</p>
+        <div id="quote-card" class="card quote-card hidden">
+          <div class="quote-header">
+            <span id="quote-ticker" class="quote-ticker"></span>
+            <span id="quote-updated" class="quote-updated"></span>
+          </div>
+          <div class="quote-prices">
+            <div class="quote-main">
+              <span class="label">Last</span>
+              <span id="quote-close" class="value value-close"></span>
+            </div>
+            <div class="quote-grid">
+              <div><span class="label">Open</span><span id="quote-open" class="value"></span></div>
+              <div><span class="label">High</span><span id="quote-high" class="value"></span></div>
+              <div><span class="label">Low</span><span id="quote-low" class="value"></span></div>
+              <div><span class="label">Volume</span><span id="quote-volume" class="value"></span></div>
+            </div>
+          </div>
+        </div>
+        <div id="quote-error" class="message error hidden"></div>
+        <div class="chart-section">
+          <h3>Price history</h3>
+          <select id="chart-days">
+            <option value="30">30 days</option>
+            <option value="90">90 days</option>
+            <option value="180">180 days</option>
+            <option value="252" selected>1 year</option>
+            <option value="365">365 days</option>
+          </select>
+          <div id="chart-container" class="chart-container">
+            <canvas id="price-chart"></canvas>
+            <div id="chart-empty" class="chart-empty">Data loads after you click Go above.</div>
+          </div>
+          <div id="volume-container" class="chart-container volume-chart hidden">
+            <h4 class="chart-label">Volume</h4>
+            <canvas id="volume-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-analysis" class="panel">
+      <div class="panel-inner">
+        <p id="analysis-prompt" class="panel-prompt">Enter a ticker or company name above and click Go to run analysis.</p>
+        <div id="analysis-card" class="card analysis-card hidden">
+          <h3 id="analysis-ticker" class="analysis-title"></h3>
+          <p id="analysis-bars-count" class="muted"></p>
+          <div id="analysis-grid" class="analysis-grid"></div>
+        </div>
+        <div id="analysis-error" class="message error hidden"></div>
+        <div id="analysis-charts" class="analysis-charts hidden">
+          <h3>Indicator series</h3>
+          <div class="chart-container small">
+            <canvas id="rsi-chart"></canvas>
+            <span class="chart-title">RSI</span>
+          </div>
+          <div class="chart-container small">
+            <canvas id="macd-chart"></canvas>
+            <span class="chart-title">MACD</span>
+          </div>
+          <div class="chart-container small">
+            <canvas id="adx-chart"></canvas>
+            <span class="chart-title">ADX (trend strength)</span>
+          </div>
+        </div>
+        <div class="risk-section">
+          <h3>Risk metrics</h3>
+          <div id="risk-card" class="card risk-card hidden">
+            <div id="risk-grid" class="analysis-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-quant" class="panel">
+      <div class="panel-inner">
+        <p id="quant-prompt" class="panel-prompt">Enter a ticker or company name above and click Go to get trading advice.</p>
+        <div id="quant-loading" class="message info hidden">Loading…</div>
+        <div id="quant-error" class="message error hidden"></div>
+        <div id="quant-summary" class="card quant-summary hidden">
+          <h3>Summary</h3>
+          <div id="quant-summary-grid" class="analysis-grid"></div>
+        </div>
+        <div id="quant-table-wrap" class="table-wrap hidden">
+          <table class="quant-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Action</th>
+                <th>Conviction</th>
+                <th>Price</th>
+                <th>Stop</th>
+                <th>Target</th>
+                <th>Risk</th>
+                <th>RSI</th>
+                <th>5d Return %</th>
+                <th>Vol %</th>
+                <th>Advice</th>
+                <th>Reasoning</th>
+              </tr>
+            </thead>
+            <tbody id="quant-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Data via Polygon.io, Alpha Vantage, Marketstack &amp; Yahoo Finance. Not investment advice.
+  </footer>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

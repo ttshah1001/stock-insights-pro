@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "name": "Quant Stock Analysis",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "python3",
+    "python.analysis.extraPaths": ["."]
+  }
+}
