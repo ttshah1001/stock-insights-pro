@@ -24,3 +24,6 @@ output/
 # Env and secrets
 .env
 .env.local
+
+# Local archives (do not commit)
+*.zip
