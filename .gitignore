@@ -25,5 +25,12 @@ output/
 .env
 .env.local
 
+# Native build artifacts
+build/
+dist/
+*.egg-info/
+*.so
+*.dylib
+
 # Local archives (do not commit)
 *.zip

@@ -37,14 +37,14 @@
   }
 
   function hidePrompts() {
-    ['market-prompt', 'analysis-prompt', 'quant-prompt'].forEach(function (id) {
+    ['market-prompt', 'analysis-prompt', 'quant-prompt', 'sim-prompt'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.classList.add('hidden');
     });
   }
 
   function showPrompts() {
-    ['market-prompt', 'analysis-prompt', 'quant-prompt'].forEach(function (id) {
+    ['market-prompt', 'analysis-prompt', 'quant-prompt', 'sim-prompt'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
     });
@@ -361,7 +361,109 @@
         showQuant([]);
         if (err) { err.textContent = 'Failed to load recommendations.'; err.classList.remove('hidden'); }
       });
+
+    // Seed execution sim mid from quote when available
+    fetch(url('/api/quote/' + encodeURIComponent(ticker)))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.close != null) {
+          var midInput = document.getElementById('sim-mid');
+          if (midInput) midInput.value = Number(data.close).toFixed(2);
+        }
+      })
+      .catch(function () {});
   }
+
+  function showSim(data) {
+    var err = document.getElementById('sim-error');
+    var summary = document.getElementById('sim-summary');
+    var grid = document.getElementById('sim-summary-grid');
+    var depth = document.getElementById('sim-depth');
+    var prompt = document.getElementById('sim-prompt');
+    if (prompt) prompt.classList.add('hidden');
+    if (data.error) {
+      if (summary) summary.classList.add('hidden');
+      if (depth) depth.classList.add('hidden');
+      if (err) { err.textContent = data.error; err.classList.remove('hidden'); }
+      return;
+    }
+    if (err) err.classList.add('hidden');
+    if (summary) summary.classList.remove('hidden');
+    if (grid) {
+      var before = data.before || {};
+      var after = data.after || {};
+      grid.innerHTML =
+        '<div class="item"><span class="label">Backend</span><span class="value">' + (data.backend || '—') + '</span></div>' +
+        '<div class="item"><span class="label">Mid</span><span class="value">' + formatPrice(data.mid) + '</span></div>' +
+        '<div class="item"><span class="label">Spread (before)</span><span class="value">' + formatPrice(before.spread) + '</span></div>' +
+        '<div class="item"><span class="label">Imbalance</span><span class="value">' + (after.imbalance != null ? Number(after.imbalance).toFixed(3) : '—') + '</span></div>' +
+        '<div class="item"><span class="label">Avg buy</span><span class="value">' + formatPrice(data.avg_buy_price) + '</span></div>' +
+        '<div class="item"><span class="label">Avg sell</span><span class="value">' + formatPrice(data.avg_sell_price) + '</span></div>' +
+        '<div class="item"><span class="label">Buy fills</span><span class="value">' + ((data.buy_trades || []).length) + '</span></div>' +
+        '<div class="item"><span class="label">Sell fills</span><span class="value">' + ((data.sell_trades || []).length) + '</span></div>';
+    }
+    if (depth && data.depth) {
+      depth.classList.remove('hidden');
+      var bids = (data.depth.bids || []).map(function (l) {
+        return Number(l.price).toFixed(2) + '  x  ' + Number(l.quantity).toFixed(0);
+      }).join('\n');
+      var asks = (data.depth.asks || []).map(function (l) {
+        return Number(l.price).toFixed(2) + '  x  ' + Number(l.quantity).toFixed(0);
+      }).join('\n');
+      var b = document.getElementById('sim-bids');
+      var a = document.getElementById('sim-asks');
+      if (b) b.textContent = bids || '(empty)';
+      if (a) a.textContent = asks || '(empty)';
+    }
+  }
+
+  function runSim() {
+    var mid = document.getElementById('sim-mid') ? document.getElementById('sim-mid').value : 100;
+    var buy = document.getElementById('sim-buy') ? document.getElementById('sim-buy').value : 25;
+    var sell = document.getElementById('sim-sell') ? document.getElementById('sim-sell').value : 15;
+    fetch(url('/api/market_sim?mid=' + encodeURIComponent(mid) + '&buy_qty=' + encodeURIComponent(buy) + '&sell_qty=' + encodeURIComponent(sell)))
+      .then(function (r) { return r.json(); })
+      .then(showSim)
+      .catch(function () { showSim({ error: 'Simulation failed' }); });
+  }
+
+  function runBench() {
+    var mid = document.getElementById('sim-mid') ? document.getElementById('sim-mid').value : 100;
+    fetch(url('/api/market_sim/benchmark?n=5000&mid=' + encodeURIComponent(mid)))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) { showSim(data); return; }
+        showSim({
+          backend: data.backend,
+          mid: mid,
+          before: { spread: null },
+          after: { imbalance: null },
+          avg_buy_price: null,
+          avg_sell_price: null,
+          buy_trades: new Array(Math.min(data.trades || 0, 1)),
+          sell_trades: [],
+          depth: { bids: [], asks: [] },
+          error: null
+        });
+        var grid = document.getElementById('sim-summary-grid');
+        var summary = document.getElementById('sim-summary');
+        if (summary) summary.classList.remove('hidden');
+        if (grid) {
+          grid.innerHTML =
+            '<div class="item"><span class="label">Backend</span><span class="value">' + (data.backend || '—') + '</span></div>' +
+            '<div class="item"><span class="label">Orders</span><span class="value">' + (data.orders || '—') + '</span></div>' +
+            '<div class="item"><span class="label">Elapsed</span><span class="value">' + (data.elapsed_ms != null ? Number(data.elapsed_ms).toFixed(2) + ' ms' : '—') + '</span></div>' +
+            '<div class="item"><span class="label">Throughput</span><span class="value">' + (data.orders_per_sec != null ? Math.round(data.orders_per_sec).toLocaleString() + '/s' : '—') + '</span></div>' +
+            '<div class="item"><span class="label">Trades</span><span class="value">' + (data.trades != null ? data.trades : '—') + '</span></div>';
+        }
+      })
+      .catch(function () { showSim({ error: 'Benchmark failed' }); });
+  }
+
+  var btnSim = document.getElementById('btn-sim-run');
+  if (btnSim) btnSim.addEventListener('click', runSim);
+  var btnBench = document.getElementById('btn-sim-bench');
+  if (btnBench) btnBench.addEventListener('click', runBench);
 
   // --- Go button: resolve then load all ---
   document.getElementById('btn-go').addEventListener('click', function () {

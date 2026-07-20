@@ -25,6 +25,7 @@
     <button type="button" class="tab active" data-tab="market">Market Data</button>
     <button type="button" class="tab" data-tab="analysis">Analysis</button>
     <button type="button" class="tab" data-tab="quant">Quant & Advice</button>
+    <button type="button" class="tab" data-tab="sim">Execution Sim</button>
   </nav>
 
   <main class="content">
@@ -133,6 +134,34 @@
             </thead>
             <tbody id="quant-tbody"></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-sim" class="panel">
+      <div class="panel-inner">
+        <p id="sim-prompt" class="panel-prompt">Enter a ticker above and click Go to seed a book around the latest price, or run a demo mid.</p>
+        <div class="sim-controls">
+          <label>Mid <input type="number" id="sim-mid" class="input-symbol" step="0.01" value="100"></label>
+          <label>Buy qty <input type="number" id="sim-buy" class="input-symbol" step="1" value="25"></label>
+          <label>Sell qty <input type="number" id="sim-sell" class="input-symbol" step="1" value="15"></label>
+          <button type="button" id="btn-sim-run" class="btn btn-primary">Run simulation</button>
+          <button type="button" id="btn-sim-bench" class="btn">Benchmark</button>
+        </div>
+        <div id="sim-error" class="message error hidden"></div>
+        <div id="sim-summary" class="card quant-summary hidden">
+          <h3>Book & fills</h3>
+          <div id="sim-summary-grid" class="analysis-grid"></div>
+        </div>
+        <div id="sim-depth" class="sim-depth hidden">
+          <div>
+            <h4>Bids</h4>
+            <pre id="sim-bids" class="sim-pre"></pre>
+          </div>
+          <div>
+            <h4>Asks</h4>
+            <pre id="sim-asks" class="sim-pre"></pre>
+          </div>
         </div>
       </div>
     </section>

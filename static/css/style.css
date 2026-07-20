@@ -400,6 +400,45 @@ body {
   color: var(--accent);
 }
 
+.sim-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.sim-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.sim-controls .input-symbol {
+  width: 110px;
+}
+.sim-depth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.sim-depth h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+.sim-pre {
+  margin: 0;
+  padding: 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  min-height: 140px;
+  white-space: pre-wrap;
+}
+
 .footer {
   margin-top: 3rem;
   padding: 1rem 2rem;

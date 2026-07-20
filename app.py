@@ -69,6 +69,7 @@ from quant_analysis.data.marketstack_client import (
 from quant_analysis.technical.indicators import TechnicalAnalyzer
 from quant_analysis.trading.daily_model import DailyTradingModel, TradeRecommendation
 from quant_analysis.risk.metrics import RiskAnalyzer
+from quant_analysis.market import MarketSimulator, benchmark as market_benchmark
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -530,6 +531,35 @@ def api_risk(ticker):
         )
         report = risk.full_report(ret)
         return jsonify({k: (round(float(v), 6) if isinstance(v, (int, float)) else v) for k, v in report.items()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/market_sim")
+def api_market_sim():
+    """Run a short order-book / matching simulation around a mid price."""
+    try:
+        mid = float(request.args.get("mid", 100))
+        buy_qty = float(request.args.get("buy_qty", 25))
+        sell_qty = float(request.args.get("sell_qty", 15))
+        slippage_bps = float(request.args.get("slippage_bps", 1.0))
+        if mid <= 0 or buy_qty < 0 or sell_qty < 0:
+            return jsonify({"error": "Invalid parameters"}), 400
+        sim = MarketSimulator(slippage_bps=slippage_bps)
+        result = sim.run_demo(mid=mid, buy_qty=buy_qty, sell_qty=sell_qty)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/market_sim/benchmark")
+def api_market_sim_benchmark():
+    """Throughput check for the matching path."""
+    try:
+        n = int(request.args.get("n", 5000))
+        n = max(100, min(n, 50_000))
+        mid = float(request.args.get("mid", 100))
+        return jsonify(market_benchmark(n_orders=n, mid=mid))
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 

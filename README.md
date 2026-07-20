@@ -19,9 +19,10 @@ A **quantitative stock market prediction and analysis framework** for investment
 ```bash
 cd quant-stock-analysis
 pip install -r requirements.txt
+pip install .   # optional native matching engine
 ```
 
-Requires Python 3.9+.
+Requires Python 3.9+ (and a C++17 compiler for the optional native module).
 
 ## Quick Start
 
